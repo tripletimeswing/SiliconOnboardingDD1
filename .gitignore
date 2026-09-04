@@ -1,0 +1,11 @@
+# Generated processor-test artifacts
+tests/*/program.o
+tests/*/program.hex
+tests/*/sim.log
+
+# Python cache files
+__pycache__/
+*.py[cod]
+
+# Cadence/Xcelium simulation output
+sim/behav/WORKSPACE/
