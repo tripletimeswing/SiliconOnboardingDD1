@@ -206,6 +206,24 @@ To run every test directory under `tests/`:
 make regress
 ```
 
+### Writing Your Own Testbench
+
+The tests above all drive `tb_processor`, the whole CPU. To exercise one
+module on its own, write your own testbench. `src/verilog/tb_fetch.sv` and
+`sim/behav/Include/fetch.include` are in this repository as an example to
+copy.
+
+Run one from `sim/behav/`:
+
+```sh
+make run_and_view INCLUDE_FILE_NAME=fetch.include TOP=tb_fetch
+```
+
+`TOP` must be the module name of the testbench itself. If you add a
+testbench to an include file but leave `TOP` at its default, the other
+testbench runs and yours never does.
+
+
 ## Provided Tests
 
 `make regress` runs every test directory under `tests/`, including any
