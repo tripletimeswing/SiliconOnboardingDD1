@@ -30,8 +30,7 @@ Requirements:
 - `sll`: left logical shift
 - `srl`: right logical shift
 - `ebreak`: halt the CPU
-- Register `x0` must stay zero, and data memory word `data[0]` should remain
-  `0x00000000`
+- Register `x0` must stay zero
 
 ## Provided Files
 
@@ -40,7 +39,8 @@ Requirements:
   access and CPU access to SRAM/register state
 - `src/verilog/sram_wrapper.sv`: wraps the provided SRAM macro
 - `src/verilog/CF_SRAM_1024x32.tt_180V_25C.v`: provided 1024x32 SRAM macro
-- `src/verilog/tb_processor.svp`: main processor testbench
+- `src/verilog/tb_processor.sv`: main processor testbench
+- `src/verilog/tb_fetch.sv`: standalone testbench example for the fetch module
 - `src/verilog/cpu/cpu_top.sv`: CPU integration point
 - `src/verilog/cpu/fetch.sv`: instruction fetch scaffold
 - `src/verilog/cpu/reg_file.sv`: register file wrapper
@@ -60,7 +60,7 @@ Requirements:
 2. Download Georgia Tech VPN (https://vpn.gatech.edu/global-protect/getsoftwarepage.esp)
 3. Log into the GlobalProtect VPN once downloaded(portal: vpn.gatech.edu)  
     - use your school username and password
-    - 'push1' sends a push to DUO, 'phone1' gives you an automated phone call
+    - `push1` sends a push to DUO, `phone1` gives you an automated phone call
 4. Download FastX or MobaXterm (or your preferred remote Terminal Emulator)
     - FastX (https://www.starnet.com/download-fastx-client/)
     - MobaXterm (https://mobaxterm.mobatek.net/download-home-edition.html)
@@ -82,13 +82,20 @@ Requirements:
     - You should now be remotely connected to the Research server Linux terminal 
     - ![image](./screenshots/fastxSetup3.png)
   
-6. run the tcsh command to switch to c-shell. This command needs to be __run every time__ you log into the server. (You should see a '>' and NOT a '$')
-7. IMPORTANT: Add the following line to your ~/.my-cshrc file: 'source /tools/software/cadence/setup.csh'. This will allow you to run the commands for cadence tools if you have gotten your EULA approved. (your ~/.my-cshrc file might be empty up until now, so just make this the first line). This is how you can do this: return to your home directory by running "cd ~". Then, do "nano ~/.my-cshrc" to enter the config file. Copy the line provided into it, then hit ctrl + the letter "o", then hit enter to save. Then hit ctrl + x to quit. To apply the changes, type "source ~/.my-cshrc". Now, typing xrun should not show an error. 
-8. Clone this repo into the linux server. This is done using git clone url <--replace url with github-provided url. You might be prompted to input your username and password for git. 
-9.  At this point, you can write your code in the files within the src/verilog/cpu folder. 
-10. Get comfortable with some linux commands, you probably only need mkdir, ls, cd. 
-11. Run the command "make smoke" from the repository root. If you error, you did something wrong.
-12. cd into sim/behav, then run the command "make simvision".
+6. run the `tcsh` command to switch to c-shell. This command needs to be __run every time__ you log into the server. (You should see a `>` and NOT a `$`)
+7. IMPORTANT: Do the following steps to set up the cadence tools
+    - Return to your home directory by running `cd ~`
+    - Run `nano ~/.my-cshrc` to enter the config file
+    - Add the line `source /tools/software/cadence/setup.csh` to the file (this allows you to run cadence tools if you have gotten your EULA approved; your ~/.my-cshrc file might be empty up until now, so just make this the first line)
+    - Hit `ctrl + o`, then hit enter to save
+    - Hit `ctrl + x` to quit
+    - To apply the changes, type `source ~/.my-cshrc`
+    - Now, typing `xrun` should not show an error
+8. Clone this repo into the linux server. This is done using `git clone <url>` <--replace `<url>` with the github-provided url. You might be prompted to input your username and password for git. 
+9.  At this point, you can write your code in the files within the `src/verilog/cpu` folder. 
+10. Get comfortable with some linux commands, you probably only need `mkdir`, `ls`, `cd`. 
+11. Run the command `make smoke` from the repository root.
+12. `cd` into `sim/behav`, then run the command `make simvision`.
 13. Once the GUI has popped up, you should be able to drag the module into variable section, whereby the signals will appear on the right.
 
 ---
