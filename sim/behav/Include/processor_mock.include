@@ -1,2 +1,2 @@
 ../../tests/mock/chip_top_mock.sv
-../../src/verilog/tb_processor.svp
+../../src/verilog/tb_processor.sv
