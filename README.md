@@ -267,7 +267,18 @@ Generated files such as `program.o` and `program.hex` are created by
 
 ## Submission Expectations
 
-- TBD, will be announced later soon
+You have two options to submit: In person or online. 
+
+Disclaimer: We will be running some back end AI and software similarity checkers on all submissions.
+
+In Person Submissions: 
+- We will ask you to walk through the logic and answer a few random questions on must-know concepts. 
+
+Additional Instructions For Online Submissions: 
+- Include a screenshot of all your tests passing with your gt username somewhere in the terminal in the screenshot
+- **submit a zip of the src folder to the sjcheckoffs Discord Account​** <img width="417" height="422" alt="image" src="https://github.gatech.edu/user-attachments/assets/1c271294-ba6a-4314-beb2-e4c76c7e97db" />
+- Include any supporting documentation you may have used (diagrams, drawings, state machines) 
+
 
 ---
 If you have any questions, send a message in the `onboarding-help` discussion channel on the [Discord server](https://discord.com/invite/swK5QnTt4j) or reach out to a Digital Design team lead:
