@@ -278,7 +278,7 @@ In Person Submissions:
 Additional Instructions For Online Submissions: 
 - Include a screenshot of all your tests passing with your gt username somewhere in the terminal in the screenshot
 - fill in your name, GT username and Discord username at the top of the `Makefile`, then run `make submit` to run every test and build the zip
-- **submit a zip of the src folder to the sjcheckoffs Discord Account​** <img width="417" height="422" alt="image" src="https://github.gatech.edu/user-attachments/assets/1c271294-ba6a-4314-beb2-e4c76c7e97db" />
+- **submit the zip that `make submit` wrote to the sjcheckoffs Discord Account​** <img width="417" height="422" alt="image" src="https://github.gatech.edu/user-attachments/assets/1c271294-ba6a-4314-beb2-e4c76c7e97db" />
 - Include any supporting documentation you may have used (diagrams, drawings, state machines) 
 
 
