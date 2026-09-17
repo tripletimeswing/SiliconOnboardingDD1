@@ -13,3 +13,4 @@ sim/behav/WORKSPACE/
 # Submission packaging
 *-dd-fall26.zip
 regress.log
+submission.stamp

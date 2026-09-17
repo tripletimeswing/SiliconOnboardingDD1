@@ -70,13 +70,14 @@ submit:
 		exit 2; \
 	fi
 	@submission="$$(printf '%s' "$$MEMBER_NAME" | tr -d "[:space:]'.,-")-$(strip $(GT_USERNAME))-$(strip $(DISCORD_NAME))-dd-fall26.zip"; \
-	rm -f "$$submission" regress.log .regress_status; \
-	{ $(MAKE) --no-print-directory regress; echo $$? > .regress_status; } 2>&1 | tee regress.log; \
-	zip -qr "$$submission" src sim/behav/Include tests regress.log \
+	rm -f "$$submission" regress.log submission.stamp; \
+	scripts/sjstamp submission.stamp regress.log src sim/behav/Include tests -- $(MAKE) --no-print-directory regress; \
+	status=$$?; \
+	if [ $$status -eq 125 ]; then echo "Could not stamp the submission, nothing was zipped."; exit 1; fi; \
+	zip -qr "$$submission" src sim/behav/Include tests regress.log submission.stamp \
 		-x '*.DS_Store' 'tests/*/program.o' 'tests/*/program.hex' 'tests/*/sim.log'; \
 	echo "----------------------------------------"; \
-	if [ "$$(cat .regress_status)" != "0" ]; then echo "WARNING: not all tests pass, see regress.log"; fi; \
-	rm -f .regress_status; \
+	if [ $$status -ne 0 ]; then echo "WARNING: not all tests pass, see regress.log"; fi; \
 	echo "Wrote $$submission"
 
 clean:
