@@ -273,6 +273,7 @@ Disclaimer: We will be running some back end AI and software similarity checkers
 
 In Person Submissions: 
 - We will ask you to walk through the logic and answer a few random questions on must-know concepts. 
+- You still need to run `make submit` and send the zip to the sjcheckoffs Discord Account, same as an online submission. 
 
 Additional Instructions For Online Submissions: 
 - Include a screenshot of all your tests passing with your gt username somewhere in the terminal in the screenshot
