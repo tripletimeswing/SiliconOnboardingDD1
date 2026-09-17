@@ -4,15 +4,18 @@ TEST_DIR := tests/$(TEST)
 MAX_CPU_CYCLES ?= 1000
 CROSSBAR_TIMEOUT ?= 20
 
+SUBMISSION := submission_$(USER).zip
+
 TEST_NAMES := $(sort $(notdir $(patsubst %/,%,$(dir $(wildcard tests/*/program.asm)))))
 
-.PHONY: help generate smoke test regress clean clean-generated
+.PHONY: help generate smoke test regress submit clean clean-generated
 
 help:
 	@echo "make generate TEST=<name>  Assemble a test and generate golden files"
 	@echo "make smoke                 Test build/TB wiring with a mock DUT"
 	@echo "make test TEST=<name>      Generate and run one RTL test"
 	@echo "make regress               Run every test, print PASS/FAIL summary (logs in tests/<name>/sim.log)"
+	@echo "make submit                Run regress and zip src/ with the log into $(SUBMISSION)"
 	@echo "make clean                 Remove generated test and simulator files"
 	@echo "Available tests: $(TEST_NAMES)"
 
@@ -53,6 +56,15 @@ regress:
 		echo "Re-run one with 'make test TEST=<name>' for the full log + waveform."; \
 		exit 1; \
 	fi
+
+submit:
+	@rm -f $(SUBMISSION) regress.log .regress_status
+	@{ $(MAKE) --no-print-directory regress; echo $$? > .regress_status; } 2>&1 | tee regress.log
+	@zip -qr $(SUBMISSION) src regress.log -x '*.DS_Store'
+	@echo "----------------------------------------"
+	@if [ "$$(cat .regress_status)" != "0" ]; then echo "WARNING: not all tests pass, see regress.log"; fi
+	@rm -f .regress_status
+	@echo "Wrote $(SUBMISSION) for $(USER)"
 
 clean:
 	$(MAKE) -C sim/behav clean

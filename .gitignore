@@ -9,3 +9,7 @@ __pycache__/
 
 # Cadence/Xcelium simulation output
 sim/behav/WORKSPACE/
+
+# Submission packaging
+submission_*.zip
+regress.log
