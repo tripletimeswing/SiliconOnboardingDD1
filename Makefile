@@ -1,3 +1,12 @@
+# Fill these in before running make submit, for example:
+#   MEMBER_NAME  = George Burdell
+#   GT_USERNAME  = gburdell3
+#   DISCORD_NAME = gburdell67discord
+MEMBER_NAME  =
+GT_USERNAME  =
+DISCORD_NAME =
+export MEMBER_NAME
+
 PYTHON ?= python3
 TEST ?= ebreak
 TEST_DIR := tests/$(TEST)
@@ -6,13 +15,14 @@ CROSSBAR_TIMEOUT ?= 20
 
 TEST_NAMES := $(sort $(notdir $(patsubst %/,%,$(dir $(wildcard tests/*/program.asm)))))
 
-.PHONY: help generate smoke test regress clean clean-generated
+.PHONY: help generate smoke test regress submit clean clean-generated
 
 help:
 	@echo "make generate TEST=<name>  Assemble a test and generate golden files"
 	@echo "make smoke                 Test build/TB wiring with a mock DUT"
 	@echo "make test TEST=<name>      Generate and run one RTL test"
 	@echo "make regress               Run every test, print PASS/FAIL summary (logs in tests/<name>/sim.log)"
+	@echo "make submit                Run regress and zip your sources, tests and log for checkoff"
 	@echo "make clean                 Remove generated test and simulator files"
 	@echo "Available tests: $(TEST_NAMES)"
 
@@ -53,6 +63,22 @@ regress:
 		echo "Re-run one with 'make test TEST=<name>' for the full log + waveform."; \
 		exit 1; \
 	fi
+
+submit:
+	@if [ -z "$(strip $(MEMBER_NAME))" ] || [ -z "$(strip $(GT_USERNAME))" ] || [ -z "$(strip $(DISCORD_NAME))" ]; then \
+		echo "Fill in MEMBER_NAME, GT_USERNAME and DISCORD_NAME at the top of the Makefile first."; \
+		exit 2; \
+	fi
+	@submission="$$(printf '%s' "$$MEMBER_NAME" | tr -d "[:space:]'.,-")-$(strip $(GT_USERNAME))-$(strip $(DISCORD_NAME))-dd-fall26.zip"; \
+	rm -f "$$submission" regress.log submission.stamp; \
+	scripts/sjstamp submission.stamp regress.log src sim/behav/Include tests -- $(MAKE) --no-print-directory regress; \
+	status=$$?; \
+	if [ $$status -eq 125 ]; then echo "Could not stamp the submission, nothing was zipped."; exit 1; fi; \
+	zip -qr "$$submission" src sim/behav/Include tests regress.log submission.stamp \
+		-x '*.DS_Store' 'tests/*/program.o' 'tests/*/program.hex' 'tests/*/sim.log'; \
+	echo "----------------------------------------"; \
+	if [ $$status -ne 0 ]; then echo "WARNING: not all tests pass, see regress.log"; fi; \
+	echo "Wrote $$submission"
 
 clean:
 	$(MAKE) -C sim/behav clean
