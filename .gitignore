@@ -11,5 +11,5 @@ __pycache__/
 sim/behav/WORKSPACE/
 
 # Submission packaging
-submission_*.zip
+*-dd-fall26.zip
 regress.log

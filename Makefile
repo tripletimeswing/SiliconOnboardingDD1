@@ -1,10 +1,16 @@
+# Fill these in before running make submit, for example:
+#   MEMBER_NAME  = George Burdell
+#   GT_USERNAME  = gburdell3
+#   DISCORD_NAME = gburdell67discord
+MEMBER_NAME  =
+GT_USERNAME  =
+DISCORD_NAME =
+
 PYTHON ?= python3
 TEST ?= ebreak
 TEST_DIR := tests/$(TEST)
 MAX_CPU_CYCLES ?= 1000
 CROSSBAR_TIMEOUT ?= 20
-
-SUBMISSION := submission_$(USER).zip
 
 TEST_NAMES := $(sort $(notdir $(patsubst %/,%,$(dir $(wildcard tests/*/program.asm)))))
 
@@ -15,7 +21,7 @@ help:
 	@echo "make smoke                 Test build/TB wiring with a mock DUT"
 	@echo "make test TEST=<name>      Generate and run one RTL test"
 	@echo "make regress               Run every test, print PASS/FAIL summary (logs in tests/<name>/sim.log)"
-	@echo "make submit                Run regress and zip src/ with the log into $(SUBMISSION)"
+	@echo "make submit                Run regress and zip your sources, tests and log for checkoff"
 	@echo "make clean                 Remove generated test and simulator files"
 	@echo "Available tests: $(TEST_NAMES)"
 
@@ -58,13 +64,19 @@ regress:
 	fi
 
 submit:
-	@rm -f $(SUBMISSION) regress.log .regress_status
-	@{ $(MAKE) --no-print-directory regress; echo $$? > .regress_status; } 2>&1 | tee regress.log
-	@zip -qr $(SUBMISSION) src regress.log -x '*.DS_Store'
-	@echo "----------------------------------------"
-	@if [ "$$(cat .regress_status)" != "0" ]; then echo "WARNING: not all tests pass, see regress.log"; fi
-	@rm -f .regress_status
-	@echo "Wrote $(SUBMISSION) for $(USER)"
+	@if [ -z "$(strip $(MEMBER_NAME))" ] || [ -z "$(strip $(GT_USERNAME))" ] || [ -z "$(strip $(DISCORD_NAME))" ]; then \
+		echo "Fill in MEMBER_NAME, GT_USERNAME and DISCORD_NAME at the top of the Makefile first."; \
+		exit 2; \
+	fi
+	@submission="$$(echo '$(strip $(MEMBER_NAME))' | tr -d ' ')-$(strip $(GT_USERNAME))-$(strip $(DISCORD_NAME))-dd-fall26.zip"; \
+	rm -f "$$submission" regress.log .regress_status; \
+	{ $(MAKE) --no-print-directory regress; echo $$? > .regress_status; } 2>&1 | tee regress.log; \
+	zip -qr "$$submission" src sim/behav/Include tests regress.log \
+		-x '*.DS_Store' 'tests/*/program.o' 'tests/*/program.hex' 'tests/*/sim.log'; \
+	echo "----------------------------------------"; \
+	if [ "$$(cat .regress_status)" != "0" ]; then echo "WARNING: not all tests pass, see regress.log"; fi; \
+	rm -f .regress_status; \
+	echo "Wrote $$submission"
 
 clean:
 	$(MAKE) -C sim/behav clean
