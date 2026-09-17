@@ -5,6 +5,7 @@
 MEMBER_NAME  =
 GT_USERNAME  =
 DISCORD_NAME =
+export MEMBER_NAME
 
 PYTHON ?= python3
 TEST ?= ebreak
@@ -68,7 +69,7 @@ submit:
 		echo "Fill in MEMBER_NAME, GT_USERNAME and DISCORD_NAME at the top of the Makefile first."; \
 		exit 2; \
 	fi
-	@submission="$$(echo '$(strip $(MEMBER_NAME))' | tr -d ' ')-$(strip $(GT_USERNAME))-$(strip $(DISCORD_NAME))-dd-fall26.zip"; \
+	@submission="$$(printf '%s' "$$MEMBER_NAME" | tr -d "[:space:]'.,-")-$(strip $(GT_USERNAME))-$(strip $(DISCORD_NAME))-dd-fall26.zip"; \
 	rm -f "$$submission" regress.log .regress_status; \
 	{ $(MAKE) --no-print-directory regress; echo $$? > .regress_status; } 2>&1 | tee regress.log; \
 	zip -qr "$$submission" src sim/behav/Include tests regress.log \
