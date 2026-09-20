@@ -82,9 +82,21 @@ module cpu_top (
 
 
 	// TODO: DO THIS FIRST, instantiate our Register File//
+	reg_file u_reg_file (
+		.clk_i(clk_i),
+		.rst_i(rst_i),
+		.rs1_addr_i('0),
+		.rs2_addr_i('0),
+		.rs1_data_o(),
+		.rs2_data_o(),
+		.rd_write_en_i(1'b0),
+		.rd_addr_i('0),
+		.rd_data_i('0),
+		.reg_values_o(reg_crossbar_o)   
+	);
 
 	// Disconnect this once you instantiate reg_file and connect reg_file's output to it instead
-	assign reg_crossbar_o = '{default: '0};
+	assign reg_crossbar_o = reg_values_o;
 
 
 
