@@ -85,13 +85,13 @@ module cpu_top (
 	reg_file u_reg_file (
 		.clk_i(clk_i),
 		.rst_i(rst_i),
-		.rs1_addr_i('0),
-		.rs2_addr_i('0),
-		.rs1_data_o(),
-		.rs2_data_o(),
-		.rd_write_en_i(1'b0),
-		.rd_addr_i('0),
-		.rd_data_i('0),
+		.rs1_addr_i(instr[19:15]),
+		.rs2_addr_i(instr[24:20]),
+		.rs1_data_o(rs1_data_o),
+		.rs2_data_o(rs2_data_o),
+		.rd_write_en_i(rd_write_en_i),
+		.rd_addr_i(rd_addr_i),
+		.rd_data_i(rd_data_i),
 		.reg_values_o(reg_crossbar_o)   
 	);
 
