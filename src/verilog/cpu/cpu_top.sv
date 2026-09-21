@@ -185,7 +185,7 @@ module cpu_top (
                     if (rs1_data == rs2_data) begin
                         branch_vld   = 1'b1;
                         branch_taken = 1'b1;
-                        branch_target_addr = current_pc + $signed(imm_b);
+                        branch_target_addr = current_pc + $unsigned(imm_b);
                         branch_trgt = branch_target_addr[11:2];
                     end
                 end
