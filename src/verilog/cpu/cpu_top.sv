@@ -79,7 +79,11 @@ module cpu_top (
     assign dsram_addr_o     = '0;
     assign dsram_wdata_o    = '0;
 
-
+    logic [31:0] rs1_data;
+	logic [31:0] rs2_data;
+	logic [31:0] rd_data;
+	logic [4:0]  rd_addr;
+	logic        rd_write_en;
 
 	// TODO: DO THIS FIRST, instantiate our Register File//
 	reg_file u_reg_file (
@@ -99,11 +103,7 @@ module cpu_top (
 	logic [2:0] funct3;
 	logic [6:0] funct7;
 
-	logic [31:0] rs1_data;
-	logic [31:0] rs2_data;
-	logic [31:0] rd_data;
-	logic [4:0]  rd_addr;
-	logic        rd_write_en;
+
 
 	logic signed [31:0] imm_i;
 
