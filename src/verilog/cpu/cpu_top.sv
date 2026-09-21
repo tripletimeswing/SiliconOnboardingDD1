@@ -32,12 +32,6 @@ module cpu_top (
 	// === Signal Declarations === //
 	logic stall_core;
 
-    logic mem_pending;
-    logic mem_is_store;
-    logic [31:0] mem_addr_reg;
-    logic [31:0] mem_wdata_reg;
-    logic [4:0]  mem_rd;
-
 	// Fetch
 	logic [31:0] instr;	
 	logic [31:0] current_pc;
@@ -47,13 +41,8 @@ module cpu_top (
 	logic branch_taken;
 	
 
-    always_comb begin
-        stall_core = halted_o | ~en_i;
-
-        if (mem_pending && !dsram_rready_i)
-            stall_core = 1'b1;
-    end
-        
+	assign stall_core = halted_o | ~en_i;//when else would you stall?
+	
 	// === Instruction Fetch === //
 	// certain ports are tied off bc they depend on modulees you need to implement.
 	fetch u_fetch (
@@ -126,22 +115,20 @@ module cpu_top (
 
         rd_write_en = 1'b0;
         rd_data = '0;
-        rd_addr = '0;
 
-        if (mem_pending && !mem_is_store) begin
-            rd_addr = mem_rd;
-        end else begin
-            rd_addr = instr[11:7];
-        end
+        mem_addr  = '0;
+        branch_target_addr = '0;
 
         case (opcode)
+            // addi
             7'b0010011: begin
                 if (funct3 == 3'b000) begin
-                    rd_data = rs1_data + $unsigned(imm_i);
+                    rd_data     = rs1_data + $unsigned(imm_i);
                     rd_write_en = 1'b1;
                 end
             end
 
+            // add / sub / sll / srl
             7'b0110011: begin
                 case (funct3)
                     3'b000: begin
@@ -149,13 +136,13 @@ module cpu_top (
                             rd_data = rs1_data + rs2_data;
                             rd_write_en = 1'b1;
                         end else if (funct7 == 7'b0100000) begin
-                            rd_data = rs1_data - rs2_data;
+                            rd_data  = rs1_data - rs2_data;
                             rd_write_en = 1'b1;
                         end
                     end
 
                     3'b001: begin
-                        rd_data = rs1_data << rs2_data[4:0];
+                        rd_data  = rs1_data << rs2_data[4:0];
                         rd_write_en = 1'b1;
                     end
 
@@ -166,86 +153,53 @@ module cpu_top (
                 endcase
             end
 
+            //lw
             7'b0000011: begin
                 if (funct3 == 3'b010) begin
-                    if (!mem_pending) begin
-                        dsram_en_o = 1'b1;
-                        dsram_addr_o = (rs1_data + $signed(imm_i))[9:0];
-                    end else begin
-                        dsram_en_o = 1'b1;
-                        dsram_addr_o = mem_addr_reg[9:0];
+                    dsram_en_o = 1'b1;
+                    mem_addr   = rs1_data + $unsigned(imm_i);
+                    dsram_addr_o = mem_addr[9:0];
+
+                    if (dsram_rready_i) begin
+                        rd_data     = dsram_rdata_i;
+                        rd_write_en = 1'b1;
                     end
                 end
             end
 
+            // sw
             7'b0100011: begin
                 if (funct3 == 3'b010) begin
-                    if (!mem_pending) begin
-                        dsram_en_o = 1'b1;
-                        dsram_write_en_o = 1'b1;
-                        dsram_addr_o = (rs1_data + $signed(imm_s))[9:0];
-                        dsram_wdata_o = rs2_data;
-                    end else begin
-                        dsram_en_o = 1'b1;
-                        dsram_write_en_o = 1'b1;
-                        dsram_addr_o = mem_addr_reg[9:0];
-                        dsram_wdata_o = mem_wdata_reg;
-                    end
+                    dsram_en_o = 1'b1;
+                    dsram_write_en_o = 1'b1;
+                    mem_addr = rs1_data + $unsigned(imm_s);
+                    dsram_addr_o = mem_addr[9:0];
+                    dsram_wdata_o  = rs2_data;
                 end
             end
 
+            // beq
             7'b1100011: begin
                 if (funct3 == 3'b000) begin
                     if (rs1_data == rs2_data) begin
                         branch_vld = 1'b1;
                         branch_taken = 1'b1;
-                        branch_trgt = (current_pc + $signed(imm_b)) >> 2;
+                        branch_target_addr = current_pc + $signed(imm_b);
+                        branch_trgt = branch_target_addr[11:2];
                     end
                 end
             end
 
+            // ebreak
             7'b1110011: begin
                 halted_o = 1'b1;
             end
-        endcase
-    end
 
-    always_ff @(posedge clk_i) begin
-        if (rst_i) begin
-            mem_pending <= 1'b0;
-            mem_is_store <= 1'b0;
-            mem_rd <= '0;
-            mem_addr_reg <= '0;
-            mem_wdata_reg <= '0;
-            rd_write_en <= 1'b0;
-        end else begin
-            // load completion
-            if (mem_pending && !mem_is_store && dsram_rready_i) begin
-                rd_data <= dsram_rdata_i;
-                rd_write_en <= 1'b1;
-                mem_pending <= 1'b0;
-            end else if (mem_pending && mem_is_store && dsram_rready_i) begin
-                mem_pending <= 1'b0;
-                mem_is_store <= 1'b0;
-            end else if (!mem_pending) begin
-                rd_write_en <= 1'b0;
-
-                if (opcode == 7'b0000011 && funct3 == 3'b010) begin
-                    mem_pending <= 1'b1;
-                    mem_is_store <= 1'b0;
-                    mem_rd <= instr[11:7];
-                    mem_addr_reg <= rs1_data + $signed(imm_i);
-                end else if (opcode == 7'b0100011 && funct3 == 3'b010) begin
-                    mem_pending <= 1'b1;
-                    mem_is_store <= 1'b1;
-                    mem_addr_reg <= rs1_data + $signed(imm_s);
-                    mem_wdata_reg <= rs2_data;
-                end else begin
-                    mem_pending <= 1'b0;
-                    mem_is_store <= 1'b0;
-                end
+            default: begin
+                rd_write_en = 1'b0;
+                rd_data = '0;
             end
-        end
+        endcase
     end
 
 	// Disconnect this once you instantiate reg_file and connect reg_file's output to it instead
