@@ -161,6 +161,7 @@ module cpu_top (
             7'b0000011: begin
                 if (funct3 == 3'b010) begin
                     dsram_en_o = 1'b1;
+                    mem_addr = rs1_data + $unsigned(imm_i);
                     dsram_addr_o = mem_addr[9:0];
 
                     if (dsram_rready_i) begin
