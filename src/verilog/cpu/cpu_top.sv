@@ -62,22 +62,6 @@ module cpu_top (
 		.branch_taken_i(branch_taken)
 	);	
 
-	//tied off, do fix
-	assign branch_vld   = 1'b0;
-    assign branch_trgt  = '0;
-    assign branch_taken = 1'b0;
-	
-
-	
-
-
-	// Unused outputs tied off until downstream modules are added
-	assign halted_o = 1'b0; //what instr should halt the cpu? does this make sense to be combinational or sequential?
-
-    assign dsram_en_o       = 1'b0;
-    assign dsram_write_en_o = 1'b0;
-    assign dsram_addr_o     = '0;
-    assign dsram_wdata_o    = '0;
 
     logic [31:0] rs1_data;
 	logic [31:0] rs2_data;
