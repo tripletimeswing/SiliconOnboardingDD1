@@ -107,6 +107,9 @@ module cpu_top (
 
 	logic signed [31:0] imm_i;
 
+    logic [31:0] mem_addr;
+    logic [31:0] branch_target_addr;
+
 	assign opcode = instr[6:0];
 	assign funct3 = instr[14:12];
 	assign funct7 = instr[31:25];
@@ -116,7 +119,6 @@ module cpu_top (
 	assign imm_b = $signed({instr[31], instr[7], instr[30:25], instr[11:8], 1'b0});
 
 	assign rd_addr = instr[11:7];
-
 
 
 
@@ -133,6 +135,9 @@ module cpu_top (
 
         rd_write_en = 1'b0;
         rd_data     = '0;
+
+        mem_addr          = '0;
+        branch_target_addr = '0;
 
         case (opcode)
             // addi
@@ -174,7 +179,8 @@ module cpu_top (
                     rd_data     = dsram_rdata_i;
                     rd_write_en = 1'b1;
                     dsram_en_o  = 1'b1;
-                    dsram_addr_o = (rs1_data + $unsigned(imm_i))[9:0];
+                    mem_addr = rs1_data + $unsigned(imm_i);
+                    dsram_addr_o = mem_addr[9:0];
                 end
             end
 
@@ -183,7 +189,8 @@ module cpu_top (
                 if (funct3 == 3'b010) begin
                     dsram_en_o         = 1'b1;
                     dsram_write_en_o   = 1'b1;
-                    dsram_addr_o       = (rs1_data + $unsigned(imm_s))[9:0];
+                    mem_addr = rs1_data + $unsigned(imm_s);
+                    dsram_addr_o = mem_addr[9:0];
                     dsram_wdata_o      = rs2_data;
                 end
             end
@@ -194,7 +201,8 @@ module cpu_top (
                     if (rs1_data == rs2_data) begin
                         branch_vld   = 1'b1;
                         branch_taken = 1'b1;
-                        branch_trgt  = (current_pc + $unsigned(imm_b))[9:0];
+                        branch_target_addr = current_pc + $unsigned(imm_b);
+                        branch_trgt = branch_target_addr[9:0];
                     end
                 end
             end
