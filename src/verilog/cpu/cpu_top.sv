@@ -107,20 +107,20 @@ module cpu_top (
 
 
     always_comb begin
-        branch_vld   = 1'b0;
-        branch_trgt  = '0;
+        branch_vld = 1'b0;
+        branch_trgt = '0;
         branch_taken = 1'b0;
-        halted_o     = 1'b0;
+        halted_o = 1'b0;
 
-        dsram_en_o       = 1'b0;
+        dsram_en_o = 1'b0;
         dsram_write_en_o = 1'b0;
-        dsram_addr_o     = '0;
-        dsram_wdata_o    = '0;
+        dsram_addr_o = '0;
+        dsram_wdata_o = '0;
 
         rd_write_en = 1'b0;
-        rd_data     = '0;
+        rd_data = '0;
 
-        mem_addr          = '0;
+        mem_addr  = '0;
         branch_target_addr = '0;
 
         case (opcode)
@@ -137,21 +137,21 @@ module cpu_top (
                 case (funct3)
                     3'b000: begin
                         if (funct7 == 7'b0000000) begin
-                            rd_data     = rs1_data + rs2_data;
+                            rd_data = rs1_data + rs2_data;
                             rd_write_en = 1'b1;
                         end else if (funct7 == 7'b0100000) begin
-                            rd_data     = rs1_data - rs2_data;
+                            rd_data  = rs1_data - rs2_data;
                             rd_write_en = 1'b1;
                         end
                     end
 
                     3'b001: begin
-                        rd_data     = rs1_data << rs2_data[4:0];
+                        rd_data  = rs1_data << rs2_data[4:0];
                         rd_write_en = 1'b1;
                     end
 
                     3'b101: begin
-                        rd_data     = rs1_data >> rs2_data[4:0];
+                        rd_data = rs1_data >> rs2_data[4:0];
                         rd_write_en = 1'b1;
                     end
                 endcase
@@ -161,7 +161,7 @@ module cpu_top (
             7'b0000011: begin
                 if (funct3 == 3'b010) begin
                     dsram_en_o = 1'b1;
-                    mem_addr = rs1_data + $unsigned(imm_i);
+                    mem_addr  = rs1_data + $unsigned(imm_i);
                     dsram_addr_o = mem_addr[9:0];
 
                     if (dsram_rready_i) begin
@@ -174,11 +174,11 @@ module cpu_top (
             // sw
             7'b0100011: begin
                 if (funct3 == 3'b010) begin
-                    dsram_en_o         = 1'b1;
-                    dsram_write_en_o   = 1'b1;
+                    dsram_en_o = 1'b1;
+                    dsram_write_en_o = 1'b1;
                     mem_addr = rs1_data + $unsigned(imm_s);
                     dsram_addr_o = mem_addr[9:0];
-                    dsram_wdata_o      = rs2_data;
+                    dsram_wdata_o  = rs2_data;
                 end
             end
 
@@ -186,7 +186,7 @@ module cpu_top (
             7'b1100011: begin
                 if (funct3 == 3'b000) begin
                     if (rs1_data == rs2_data) begin
-                        branch_vld   = 1'b1;
+                        branch_vld = 1'b1;
                         branch_taken = 1'b1;
                         branch_target_addr = current_pc + $signed(imm_b);
                         branch_trgt = branch_target_addr[11:2];
@@ -201,7 +201,7 @@ module cpu_top (
 
             default: begin
                 rd_write_en = 1'b0;
-                rd_data     = '0;
+                rd_data = '0;
             end
         endcase
     end
