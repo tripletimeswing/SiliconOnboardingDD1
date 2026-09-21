@@ -120,96 +120,96 @@ module cpu_top (
 
 
 
-always_comb begin
-    branch_vld   = 1'b0;
-    branch_trgt  = '0;
-    branch_taken = 1'b0;
-    halted_o     = 1'b0;
+    always_comb begin
+        branch_vld   = 1'b0;
+        branch_trgt  = '0;
+        branch_taken = 1'b0;
+        halted_o     = 1'b0;
 
-    dsram_en_o       = 1'b0;
-    dsram_write_en_o = 1'b0;
-    dsram_addr_o     = '0;
-    dsram_wdata_o    = '0;
+        dsram_en_o       = 1'b0;
+        dsram_write_en_o = 1'b0;
+        dsram_addr_o     = '0;
+        dsram_wdata_o    = '0;
 
-    rd_write_en = 1'b0;
-    rd_data     = '0;
+        rd_write_en = 1'b0;
+        rd_data     = '0;
 
-    case (opcode)
-        // addi
-        7'b0010011: begin
-            if (funct3 == 3'b000) begin
-                rd_data     = rs1_data + $unsigned(imm_i);
-                rd_write_en = 1'b1;
+        case (opcode)
+            // addi
+            7'b0010011: begin
+                if (funct3 == 3'b000) begin
+                    rd_data     = rs1_data + $unsigned(imm_i);
+                    rd_write_en = 1'b1;
+                end
             end
-        end
 
-        // add / sub / sll / srl
-        7'b0110011: begin
-            case (funct3)
-                3'b000: begin
-                    if (funct7 == 7'b0000000) begin
-                        rd_data     = rs1_data + rs2_data;
-                        rd_write_en = 1'b1;
-                    end else if (funct7 == 7'b0100000) begin
-                        rd_data     = rs1_data - rs2_data;
+            // add / sub / sll / srl
+            7'b0110011: begin
+                case (funct3)
+                    3'b000: begin
+                        if (funct7 == 7'b0000000) begin
+                            rd_data     = rs1_data + rs2_data;
+                            rd_write_en = 1'b1;
+                        end else if (funct7 == 7'b0100000) begin
+                            rd_data     = rs1_data - rs2_data;
+                            rd_write_en = 1'b1;
+                        end
+                    end
+
+                    3'b001: begin
+                        rd_data     = rs1_data << rs2_data[4:0];
                         rd_write_en = 1'b1;
                     end
-                end
 
-                3'b001: begin
-                    rd_data     = rs1_data << rs2_data[4:0];
+                    3'b101: begin
+                        rd_data     = rs1_data >> rs2_data[4:0];
+                        rd_write_en = 1'b1;
+                    end
+                endcase
+            end
+
+            //lw
+            7'b0000011: begin
+                if (funct3 == 3'b010) begin
+                    rd_data     = dsram_rdata_i;
                     rd_write_en = 1'b1;
-                end
-
-                3'b101: begin
-                    rd_data     = rs1_data >> rs2_data[4:0];
-                    rd_write_en = 1'b1;
-                end
-            endcase
-        end
-
-		//lw
-		7'b0000011: begin
-            if (funct3 == 3'b010) begin
-                rd_data     = dsram_rdata_i;
-                rd_write_en = 1'b1;
-                dsram_en_o  = 1'b1;
-                dsram_addr_o = (rs1_data + $unsigned(imm_i))[9:0];
-            end
-        end
-
-        // sw
-        7'b0100011: begin
-            if (funct3 == 3'b010) begin
-                dsram_en_o         = 1'b1;
-                dsram_write_en_o   = 1'b1;
-                dsram_addr_o       = (rs1_data + $unsigned(imm_s))[9:0];
-                dsram_wdata_o      = rs2_data;
-            end
-        end
-
-        // beq
-        7'b1100011: begin
-            if (funct3 == 3'b000) begin
-                if (rs1_data == rs2_data) begin
-                    branch_vld   = 1'b1;
-                    branch_taken = 1'b1;
-                    branch_trgt  = (current_pc + $unsigned(imm_b))[9:0];
+                    dsram_en_o  = 1'b1;
+                    dsram_addr_o = (rs1_data + $unsigned(imm_i))[9:0];
                 end
             end
-        end
 
-        // ebreak
-        7'b1110011: begin
-            halted_o = 1'b1;
-        end
+            // sw
+            7'b0100011: begin
+                if (funct3 == 3'b010) begin
+                    dsram_en_o         = 1'b1;
+                    dsram_write_en_o   = 1'b1;
+                    dsram_addr_o       = (rs1_data + $unsigned(imm_s))[9:0];
+                    dsram_wdata_o      = rs2_data;
+                end
+            end
 
-        default: begin
-            rd_write_en = 1'b0;
-            rd_data     = '0;
-        end
-    endcase
-end
+            // beq
+            7'b1100011: begin
+                if (funct3 == 3'b000) begin
+                    if (rs1_data == rs2_data) begin
+                        branch_vld   = 1'b1;
+                        branch_taken = 1'b1;
+                        branch_trgt  = (current_pc + $unsigned(imm_b))[9:0];
+                    end
+                end
+            end
+
+            // ebreak
+            7'b1110011: begin
+                halted_o = 1'b1;
+            end
+
+            default: begin
+                rd_write_en = 1'b0;
+                rd_data     = '0;
+            end
+        endcase
+    end
 
 	// Disconnect this once you instantiate reg_file and connect reg_file's output to it instead
 
