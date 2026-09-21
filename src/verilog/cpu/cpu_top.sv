@@ -186,7 +186,7 @@ module cpu_top (
                         branch_vld   = 1'b1;
                         branch_taken = 1'b1;
                         branch_target_addr = current_pc + $unsigned(imm_b);
-                        branch_trgt = branch_target_addr[9:0];
+                        branch_trgt = branch_target_addr[11:2];
                     end
                 end
             end
