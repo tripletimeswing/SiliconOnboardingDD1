@@ -102,6 +102,16 @@ module cpu_top (
 
 	assign rd_addr = instr[11:7];
 
+    logic load_pending;
+
+    always_comb begin
+        stall_core = halted_o | ~en_i;
+
+        if (load_pending && !dsram_rready_i)
+            stall_core = 1'b1;
+    end
+
+
     always_comb begin
         branch_vld = 1'b0;
         branch_trgt = '0;
@@ -154,16 +164,19 @@ module cpu_top (
             end
 
             //lw
-            7'b0000011: begin
-                if (funct3 == 3'b010) begin
-                    dsram_en_o = 1'b1;
-                    mem_addr   = rs1_data + $unsigned(imm_i);
-                    dsram_addr_o = mem_addr[9:0];
+            if (opcode == 7'b0000011 && funct3 == 3'b010) begin
+                dsram_en_o = 1'b1;
+                mem_addr = rs1_data + $unsigned(imm_i);
+                dsram_addr_o = mem_addr[9:0];
 
-                    if (dsram_rready_i) begin
-                        rd_data     = dsram_rdata_i;
-                        rd_write_en = 1'b1;
-                    end
+                if (!load_pending) begin
+                    load_pending = 1'b1;
+                end
+
+                if (dsram_rready_i) begin
+                    rd_data = dsram_rdata_i;
+                    rd_write_en = 1'b1;
+                    load_pending = 1'b0;
                 end
             end
 
