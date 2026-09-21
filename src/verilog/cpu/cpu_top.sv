@@ -32,6 +32,12 @@ module cpu_top (
 	// === Signal Declarations === //
 	logic stall_core;
 
+    logic mem_pending;
+    logic mem_is_store;
+    logic [31:0] mem_addr_reg;
+    logic [31:0] mem_wdata_reg;
+    logic [4:0]  mem_rd;
+
 	// Fetch
 	logic [31:0] instr;	
 	logic [31:0] current_pc;
@@ -207,11 +213,7 @@ module cpu_top (
         endcase
     end
 
-    logic mem_pending;
-    logic mem_is_store;
-    logic [31:0] mem_addr_reg;
-    logic [31:0] mem_wdata_reg;
-    logic [4:0]  mem_rd;
+
 
 
     always_ff @(posedge clk_i) begin
