@@ -238,6 +238,6 @@ module cpu_top (
 	// Disconnect this once you instantiate reg_file and connect reg_file's output to it instead
 
 
-    //cooked
+    //got cooked
 	// instantiate the other modules you make here//
 endmodule
