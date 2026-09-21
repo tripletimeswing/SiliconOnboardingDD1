@@ -169,7 +169,7 @@ always_comb begin
         end
 
 		//lw
-		      7'b0000011: begin
+		7'b0000011: begin
             if (funct3 == 3'b010) begin
                 rd_data     = dsram_rdata_i;
                 rd_write_en = 1'b1;
