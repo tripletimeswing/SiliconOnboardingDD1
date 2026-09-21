@@ -39,9 +39,21 @@ module cpu_top (
 	logic branch_vld;
 	logic [9:0] branch_trgt;	
 	logic branch_taken;
+
+    
+    logic mem_pending;
+    logic mem_is_store;
+    logic [31:0] mem_addr_reg;
+    logic [31:0] mem_wdata_reg;
+    logic [4:0]  mem_rd;
 	
 
-	assign stall_core = halted_o | ~en_i;//when else would you stall?
+    always_comb begin
+        stall_core = halted_o | ~en_i;
+
+        if (mem_pending && !dsram_rready_i)
+            stall_core = 1'b1;
+    end
 	
 	// === Instruction Fetch === //
 	// certain ports are tied off bc they depend on modulees you need to implement.
@@ -91,6 +103,7 @@ module cpu_top (
 
     logic [31:0] mem_addr;
     logic [31:0] branch_target_addr;
+
 
 	assign opcode = instr[6:0];
 	assign funct3 = instr[14:12];
@@ -200,6 +213,53 @@ module cpu_top (
                 rd_data = '0;
             end
         endcase
+    end
+
+
+    always_ff @(posedge clk_i) begin
+        if (rst_i) begin
+            mem_pending <= 1'b0;
+            mem_is_store <= 1'b0;
+            mem_rd      <= '0;
+            mem_addr_reg <= '0;
+            mem_wdata_reg <= '0;
+            rd_write_en <= 1'b0;
+        end else if (mem_pending) begin
+            if (mem_is_store) begin
+                if (dsram_rready_i) begin
+                    mem_pending <= 1'b0;
+                end
+            end else begin
+                if (dsram_rready_i) begin
+                    rd_data     <= dsram_rdata_i;
+                    rd_write_en <= 1'b1;
+                    rd_addr     <= mem_rd;
+                    mem_pending <= 1'b0;
+                end else begin
+                    rd_write_en <= 1'b0;
+                end
+            end
+        end else begin
+            rd_write_en <= 1'b0;
+
+            if (opcode == 7'b0000011 && funct3 == 3'b010) begin
+                mem_pending <= 1'b1;
+                mem_is_store <= 1'b0;
+                mem_addr_reg <= rs1_data + $unsigned(imm_i);
+                mem_rd       <= rd_addr;
+                dsram_en_o   <= 1'b1;
+                dsram_addr_o <= mem_addr_reg[9:0];
+            end else if (opcode == 7'b0100011 && funct3 == 3'b010) begin
+                mem_pending <= 1'b1;
+                mem_is_store <= 1'b1;
+                mem_addr_reg <= rs1_data + $unsigned(imm_s);
+                mem_wdata_reg <= rs2_data;
+                dsram_en_o <= 1'b1;
+                dsram_write_en_o <= 1'b1;
+                dsram_addr_o <= mem_addr_reg[9:0];
+                dsram_wdata_o <= mem_wdata_reg;
+            end
+        end
     end
 
 	// Disconnect this once you instantiate reg_file and connect reg_file's output to it instead
