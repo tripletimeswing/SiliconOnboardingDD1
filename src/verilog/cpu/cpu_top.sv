@@ -102,39 +102,6 @@ module cpu_top (
 
 	assign rd_addr = instr[11:7];
 
-    logic load_pending;
-    logic [4:0] load_rd;
-
-    always_ff @(posedge clk_i) begin
-        if (rst_i) begin
-            load_pending <= 1'b0;
-            load_rd      <= '0;
-            rd_write_en  <= 1'b0;
-        end else begin
-            if (load_pending) begin
-                if (dsram_rready_i) begin
-                    rd_data     <= dsram_rdata_i;
-                    rd_write_en <= 1'b1;
-                    rd_addr     <= load_rd;
-                    load_pending <= 1'b0;
-                end else begin
-                    rd_write_en <= 1'b0;
-                end
-            end else begin
-                rd_write_en <= 1'b0;
-
-                if (opcode == 7'b0000011 && funct3 == 3'b010) begin
-                    mem_addr    = rs1_data + $unsigned(imm_i);
-                    dsram_en_o  = 1'b1;
-                    dsram_addr_o = mem_addr[9:0];
-                    load_rd     = rd_addr;
-                    load_pending <= 1'b1;
-                end
-            end
-        end
-    end
-
-
     always_comb begin
         branch_vld = 1'b0;
         branch_trgt = '0;
